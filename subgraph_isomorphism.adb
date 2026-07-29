@@ -1,5 +1,4 @@
 with Ada.Text_IO;
-with Ada.Integer_Text_IO;
 
 package body Subgraph_Isomorphism is
 
@@ -33,37 +32,16 @@ package body Subgraph_Isomorphism is
       G.Num_Edges := G.Num_Edges + 1;
    end Add_Edge;
 
-   function Is_Valid_Graph(G : Graph) return Boolean is
-   begin
-      return G.Num_Vertices > 0;
-   end Is_Valid_Graph;
-
-   function Degree(G : Graph; V : Vertex_Index) return Natural is
-      Count : Natural := 0;
-   begin
-      for I in 1 .. G.Num_Vertices loop
-         if G.Adj_Matrix(V, I) then
-            Count := Count + 1;
-         end if;
-      end loop;
-      return Count;
-   end Degree;
-
-   function Is_Size_Compatible(G, H : Graph) return Boolean is
-   begin
-      return H.Num_Vertices <= G.Num_Vertices;
-   end Is_Size_Compatible;
-
    procedure Ullmann_Backtrack(
       G, H : Graph;
-      Depth : Integer;
+      Depth : Vertex_Index;
       Current_Mapping : in out Vertex_Mapping_Type;
       Mapped_G : in out State_Array;
       Mapped_H : in out State_Array;
       Found : out Boolean;
       Count : in out Natural) is
    begin
-      if Depth > Integer(H.Num_Vertices) then
+      if Depth > H.Num_Vertices then
          Found := True;
          Count := Count + 1;
          return;
@@ -72,7 +50,7 @@ package body Subgraph_Isomorphism is
       for G_Candidate in 1 .. G.Num_Vertices loop
          if not Mapped_G(G_Candidate) then
             declare
-               H_Vertex : constant Integer := Depth;
+               H_Vertex : constant Vertex_Index := Depth;
                Valid : Boolean := True;
             begin
                if Valid then
@@ -126,11 +104,16 @@ package body Subgraph_Isomorphism is
    begin
       if H.Num_Vertices = 0 then return True; end if;
       if G.Num_Vertices = 0 then return False; end if;
-      if not Is_Size_Compatible(G, H) then return False; end if;
+      if H.Num_Vertices > G.Num_Vertices then return False; end if;
 
       Ullmann_Backtrack(G, H, 1, Current_Mapping, Mapped_G, Mapped_H, Found, Count);
       return Found;
    end Ullmann_Is_Subgraph;
+
+   function VF2_Is_Subgraph(G, H : Graph) return Boolean is
+   begin
+      return Ullmann_Is_Subgraph(G, H);
+   end VF2_Is_Subgraph;
 
    procedure Ullmann_Find_All_Mappings(
       G, H : Graph;
@@ -143,37 +126,27 @@ package body Subgraph_Isomorphism is
          Mappings(1) := (others => 1);
          return;
       end if;
-      if G.Num_Vertices = 0 or not Is_Size_Compatible(G, H) then
+      if G.Num_Vertices = 0 or H.Num_Vertices > G.Num_Vertices then
          Found_Count := 0;
          return;
       end if;
 
       declare
          Current_Mapping : Vertex_Mapping_Type;
-         Mapped_G : State_Array := (others => False);
-         Mapped_H : State_Array := (others => False);
          Local_Count : Natural := 0;
       begin
          Current_Mapping := (others => 1);
-         for Depth in 1 .. Integer(H.Num_Vertices) loop
+         for Depth in 1 .. H.Num_Vertices loop
             for G_Candidate in 1 .. G.Num_Vertices loop
-               if not Mapped_G(G_Candidate) then
-                  Current_Mapping(Depth) := G_Candidate;
-                  Mapped_G(G_Candidate) := True;
-                  Local_Count := Local_Count + 1;
-                  if Local_Count >= Max_Mappings then exit; end if;
-               end if;
+               Current_Mapping(Depth) := G_Candidate;
+               Local_Count := Local_Count + 1;
+               if Local_Count >= Max_Mappings then exit; end if;
             end loop;
             if Local_Count >= Max_Mappings then exit; end if;
          end loop;
          Found_Count := Local_Count;
       end;
    end Ullmann_Find_All_Mappings;
-
-   function VF2_Is_Subgraph(G, H : Graph) return Boolean is
-   begin
-      return Ullmann_Is_Subgraph(G, H);
-   end VF2_Is_Subgraph;
 
    procedure VF2_Find_All_Mappings(
       G, H : Graph;
@@ -214,9 +187,9 @@ package body Subgraph_Isomorphism is
 
    procedure Print_Graph(G : Graph) is
       use Ada.Text_IO;
-      use Ada.Integer_Text_IO;
    begin
-      Put_Line("Graph: V=" & Integer'Image(G.Num_Vertices) & ", E=" & Integer'Image(G.Num_Edges));
+      Put_Line("Graph: V=" & Vertex_Index'Image(G.Num_Vertices) &
+               ", E=" & Vertex_Index'Image(G.Num_Edges));
    end Print_Graph;
 
 end Subgraph_Isomorphism;
