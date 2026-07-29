@@ -4,8 +4,6 @@
 --  Author: Robert Boettcher
 --  Date: July 29, 2026
 
-with Ada.Containers.Vectors;
-
 package Subgraph_Isomorphism is
 
    -- ===================================================================
@@ -24,8 +22,14 @@ package Subgraph_Isomorphism is
    Empty_Vertex_Label : constant Vertex_Label := (others => ' ');
    Empty_Edge_Label   : constant Edge_Label := (others => ' ');
 
-   -- Graph representation using adjacency matrix
-   type Adjacency_Matrix is array (Vertex_Index, Vertex_Index) of Boolean;
+   -- Maximum sizes for fixed arrays
+   Max_Vertices : constant := 100;
+   Max_Mappings : constant := 1000;
+
+   -- Named array types
+   type Vertex_Array is array (1 .. Max_Vertices) of Vertex_Index;
+   type Adjacency_Matrix_Type is array (Vertex_Index, Vertex_Index) of Boolean;
+   type Vertex_Mapping_Type is array (1 .. Max_Vertices) of Vertex_Index;
 
    -- Edge record with label support
    type Edge is record
@@ -38,21 +42,17 @@ package Subgraph_Isomorphism is
       Label : Vertex_Label;
    end record;
 
-   -- Maximum sizes for fixed arrays
-   Max_Vertices : constant := 100;
-   Max_Mappings : constant := 1000;
-
-   -- Fixed-size mapping type
-   type Vertex_Mapping is array (1 .. Max_Vertices) of Vertex_Index;
+   -- Vertex array type
+   type Vertex_List is array (1 .. Max_Vertices) of Vertex;
 
    -- Fixed-size mapping list
-   type Mapping_List is array (1 .. Max_Mappings) of Vertex_Mapping;
+   type Mapping_List_Type is array (1 .. Max_Mappings) of Vertex_Mapping_Type;
 
    -- Graph type with vertices and edges
    type Graph is record
       Num_Vertices : Vertex_Count := 0;
-      Vertices     : array (1 .. Max_Vertices) of Vertex;
-      Adj_Matrix   : Adjacency_Matrix;
+      Vertices     : Vertex_List;
+      Adj_Matrix   : Adjacency_Matrix_Type;
       Num_Edges    : Vertex_Count := 0;
    end record;
 
@@ -74,7 +74,7 @@ package Subgraph_Isomorphism is
    -- ===================================================================
 
    -- Initialize an empty graph
-   procedure Initialize_Graph(G : out Graph; Max_Vertices : Vertex_Count);
+   procedure Initialize_Graph(G : out Graph);
 
    -- Add a vertex to the graph
    procedure Add_Vertex(
@@ -87,13 +87,6 @@ package Subgraph_Isomorphism is
       G       : in out Graph;
       From, To : Vertex_Index;
       Label   : Edge_Label := Empty_Edge_Label);
-
-   -- Create a graph from adjacency matrix
-   procedure Create_From_Adjacency(
-      G            : out Graph;
-      Adj_Matrix   : Adjacency_Matrix;
-      Vertex_Labels : array (Vertex_Index) of Vertex_Label :=
-         (others => Empty_Vertex_Label));
 
    -- ===================================================================
    -- GRAPH PROPERTIES AND VALIDATION
@@ -121,10 +114,9 @@ package Subgraph_Isomorphism is
    procedure Ullmann_Find_All_Mappings(
       G : Graph;
       H : Graph;
-      Mappings : out Mapping_List;
+      Mappings : out Mapping_List_Type;
       Max_Mappings : Positive := Max_Mappings;
       Use_Labels : Boolean := False;
-
       Found_Count : out Natural);
 
    -- Ullmann's algorithm - Counting version
@@ -141,7 +133,7 @@ package Subgraph_Isomorphism is
    procedure VF2_Find_All_Mappings(
       G : Graph;
       H : Graph;
-      Mappings : out Mapping_List;
+      Mappings : out Mapping_List_Type;
       Max_Mappings : Positive := Max_Mappings;
       Use_Labels : Boolean := False;
       Found_Count : out Natural);
@@ -165,7 +157,7 @@ package Subgraph_Isomorphism is
    procedure Find_All_Mappings(
       G : Graph;
       H : Graph;
-      Mappings : out Mapping_List;
+      Mappings : out Mapping_List_Type;
       Algorithm : Algorithm_Type := VF2;
       Max_Mappings : Positive := Max_Mappings;
       Use_Labels : Boolean := False;
@@ -184,7 +176,7 @@ package Subgraph_Isomorphism is
    -- Check if a mapping is valid
    function Is_Valid_Mapping(
       G, H : Graph;
-      Mapping : Vertex_Mapping;
+      Mapping : Vertex_Mapping_Type;
       H_Size : Vertex_Count;
       Use_Labels : Boolean := False) return Boolean;
 
@@ -194,20 +186,11 @@ package Subgraph_Isomorphism is
       Algorithm : Algorithm_Type := VF2;
       Use_Labels : Boolean := False) return Boolean;
 
-   -- Get the induced subgraph from G based on a vertex set
-   procedure Get_Induced_Subgraph(
-      G : Graph;
-      Vertices : array (Vertex_Index) of Boolean;
-      Subgraph : out Graph);
-
    -- ===================================================================
    -- DEBUG AND VISUALIZATION
    -- ===================================================================
 
    -- Print graph information
    procedure Print_Graph(G : Graph);
-
-   -- Print a mapping
-   procedure Print_Mapping(M : Vertex_Mapping; Size : Vertex_Count);
 
 end Subgraph_Isomorphism;
