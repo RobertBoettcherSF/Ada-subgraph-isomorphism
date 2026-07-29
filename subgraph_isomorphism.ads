@@ -3,9 +3,8 @@ package Subgraph_Isomorphism is
    Max_Vertices : constant := 100;
    Max_Mappings : constant := 1000;
 
-   type Vertex_Index is range 1 .. Max_Vertices;
-   type Adjacency_Matrix_Type is array (Vertex_Index, Vertex_Index) of Boolean;
-   type Vertex_Mapping_Type is array (1 .. Max_Vertices) of Vertex_Index;
+   type Adjacency_Matrix_Type is array (1 .. Max_Vertices, 1 .. Max_Vertices) of Boolean;
+   type Vertex_Mapping_Type is array (1 .. Max_Vertices) of Integer;
    type Mapping_List_Type is array (1 .. Max_Mappings) of Vertex_Mapping_Type;
 
    type Graph is record
@@ -21,8 +20,8 @@ package Subgraph_Isomorphism is
    Invalid_Edge    : exception;
 
    procedure Initialize_Graph(G : out Graph);
-   procedure Add_Vertex(G : in out Graph; V : Vertex_Index);
-   procedure Add_Edge(G : in out Graph; From, To : Vertex_Index);
+   procedure Add_Vertex(G : in out Graph; V : Integer);
+   procedure Add_Edge(G : in out Graph; From, To : Integer);
 
    function Is_Subgraph(G, H : Graph; Algorithm : Algorithm_Type := VF2) return Boolean;
    procedure Find_All_Mappings(
