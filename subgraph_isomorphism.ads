@@ -1,22 +1,10 @@
 --  subgraph_isomorphism.ads
 --  Package specification for Subgraph Isomorphism Problem algorithms
 --
---  This package implements algorithms for solving the subgraph isomorphism problem:
---  - Ullmann's backtracking algorithm (1976)
---  - VF2 algorithm (Cordella, 2004)
---
---  Variants implemented:
---  1. Decision: Check if H is isomorphic to a subgraph of G (Boolean result)
---  2. Enumeration: Find all mappings (all valid isomorphisms)
---  3. Counting: Count the number of isomorphisms
---  4. Labeled graphs: Support for vertex and edge labels
---
 --  Author: Robert Boettcher
 --  Date: July 29, 2026
 
 with Ada.Containers.Vectors;
-with Ada.Containers.Doubly_Linked_Lists;
-with Ada.Strings.Unbounded;
 
 package Subgraph_Isomorphism is
 
@@ -25,7 +13,7 @@ package Subgraph_Isomorphism is
    -- ===================================================================
 
    -- Vertex index type (1-based for user convenience)
-   type Vertex_Index is range 1 .. 1000;
+   type Vertex_Index is range 1 .. 100;
    type Vertex_Count is range 0 .. Vertex_Index'Last;
 
    -- Label types for vertices and edges
@@ -45,30 +33,31 @@ package Subgraph_Isomorphism is
       Label    : Edge_Label;
    end record;
 
-   -- Edge list for sparse representation
-   type Edge_List is array (Positive range <>) of Edge;
-
    -- Vertex record with label
    type Vertex is record
       Label : Vertex_Label;
    end record;
 
+   -- Maximum sizes for fixed arrays
+   Max_Vertices : constant := 100;
+   Max_Mappings : constant := 1000;
+
+   -- Fixed-size mapping type
+   type Vertex_Mapping is array (1 .. Max_Vertices) of Vertex_Index;
+
+   -- Fixed-size mapping list
+   type Mapping_List is array (1 .. Max_Mappings) of Vertex_Mapping;
+
    -- Graph type with vertices and edges
    type Graph is record
       Num_Vertices : Vertex_Count := 0;
-      Vertices     : array (Vertex_Index) of Vertex;
+      Vertices     : array (1 .. Max_Vertices) of Vertex;
       Adj_Matrix   : Adjacency_Matrix;
-      Edge_List    : Edge_List(1 .. 1000); -- Sparse edge storage
       Num_Edges    : Vertex_Count := 0;
    end record;
 
-   -- Mapping type: maps vertices from pattern (H) to target (G)
-   type Vertex_Mapping is array (Vertex_Index) of Vertex_Index;
-   type Mapping_List is array (Positive range <>) of Vertex_Mapping;
-
    -- Result types
-   type Isomorphism_Result is (Found, Not_Found);
-   type Solution_Type is (First, All, Count);
+   type Algorithm_Type is (Ullmann, VF2);
 
    -- ===================================================================
    -- EXCEPTIONS
@@ -78,6 +67,7 @@ package Subgraph_Isomorphism is
    Invalid_Vertex  : exception;
    Invalid_Edge    : exception;
    No_Vertices     : exception;
+   Too_Many_Mappings : exception;
 
    -- ===================================================================
    -- GRAPH CONSTRUCTION AND MANIPULATION
@@ -109,48 +99,38 @@ package Subgraph_Isomorphism is
    -- GRAPH PROPERTIES AND VALIDATION
    -- ===================================================================
 
-   -- Check if a graph is valid (no invalid vertex indices)
+   -- Check if a graph is valid
    function Is_Valid_Graph(G : Graph) return Boolean;
 
    -- Get the degree of a vertex
    function Degree(G : Graph; V : Vertex_Index) return Natural;
 
-   -- Check if two graphs have compatible sizes for subgraph isomorphism
+   -- Check if two graphs have compatible sizes
    function Is_Size_Compatible(G, H : Graph) return Boolean;
 
    -- ===================================================================
    -- SUBGRAPH ISOMORPHISM ALGORITHMS
    -- ===================================================================
 
-   -- ===================================================================
-   -- ULLMANN'S ALGORITHM (1976)
-   -- Backtracking algorithm for subgraph isomorphism
-   -- ===================================================================
-
    -- Ullmann's algorithm - Decision version
-   -- Returns True if H is isomorphic to a subgraph of G
    function Ullmann_Is_Subgraph(
       G, H : Graph;
       Use_Labels : Boolean := False) return Boolean;
 
    -- Ullmann's algorithm - Enumeration version
-   -- Returns all mappings from H to G
    procedure Ullmann_Find_All_Mappings(
-      G, H      : Graph;
-      Mappings  : out Mapping_List;
-      Max_Mappings : Positive := 1000;
-      Use_Labels : Boolean := False);
+      G : Graph;
+      H : Graph;
+      Mappings : out Mapping_List;
+      Max_Mappings : Positive := Max_Mappings;
+      Use_Labels : Boolean := False;
+
+      Found_Count : out Natural);
 
    -- Ullmann's algorithm - Counting version
-   -- Returns the number of isomorphisms
    function Ullmann_Count_Isomorphisms(
       G, H : Graph;
       Use_Labels : Boolean := False) return Natural;
-
-   -- ===================================================================
-   -- VF2 ALGORITHM (Cordella, 2004)
-   -- Improved algorithm based on Ullmann's with better heuristics
-   -- ===================================================================
 
    -- VF2 algorithm - Decision version
    function VF2_Is_Subgraph(
@@ -159,10 +139,12 @@ package Subgraph_Isomorphism is
 
    -- VF2 algorithm - Enumeration version
    procedure VF2_Find_All_Mappings(
-      G, H      : Graph;
-      Mappings  : out Mapping_List;
-      Max_Mappings : Positive := 1000;
-      Use_Labels : Boolean := False);
+      G : Graph;
+      H : Graph;
+      Mappings : out Mapping_List;
+      Max_Mappings : Positive := Max_Mappings;
+      Use_Labels : Boolean := False;
+      Found_Count : out Natural);
 
    -- VF2 algorithm - Counting version
    function VF2_Count_Isomorphisms(
@@ -173,26 +155,25 @@ package Subgraph_Isomorphism is
    -- UNIFIED INTERFACE
    -- ===================================================================
 
-   -- Generic subgraph isomorphism check with algorithm selection
-   type Algorithm_Type is (Ullmann, VF2);
-
    -- Main function: Check if H is isomorphic to a subgraph of G
    function Is_Subgraph(
-      G, H         : Graph;
-      Algorithm    : Algorithm_Type := VF2;
-      Use_Labels   : Boolean := False) return Boolean;
+      G, H : Graph;
+      Algorithm : Algorithm_Type := VF2;
+      Use_Labels : Boolean := False) return Boolean;
 
    -- Find all mappings from H to G
    procedure Find_All_Mappings(
-      G, H         : Graph;
-      Mappings     : out Mapping_List;
-      Algorithm    : Algorithm_Type := VF2;
-      Max_Mappings : Positive := 1000;
-      Use_Labels   : Boolean := False);
+      G : Graph;
+      H : Graph;
+      Mappings : out Mapping_List;
+      Algorithm : Algorithm_Type := VF2;
+      Max_Mappings : Positive := Max_Mappings;
+      Use_Labels : Boolean := False;
+      Found_Count : out Natural);
 
    -- Count the number of isomorphisms
    function Count_Isomorphisms(
-      G, H      : Graph;
+      G, H : Graph;
       Algorithm : Algorithm_Type := VF2;
       Use_Labels : Boolean := False) return Natural;
 
@@ -200,23 +181,24 @@ package Subgraph_Isomorphism is
    -- UTILITY FUNCTIONS
    -- ===================================================================
 
-   -- Check if a mapping is valid (preserves adjacency)
+   -- Check if a mapping is valid
    function Is_Valid_Mapping(
-      G, H      : Graph;
-      Mapping   : Vertex_Mapping;
+      G, H : Graph;
+      Mapping : Vertex_Mapping;
+      H_Size : Vertex_Count;
       Use_Labels : Boolean := False) return Boolean;
 
-   -- Check if two graphs are isomorphic (not just subgraph)
+   -- Check if two graphs are isomorphic
    function Are_Isomorphic(
-      G, H      : Graph;
+      G, H : Graph;
       Algorithm : Algorithm_Type := VF2;
       Use_Labels : Boolean := False) return Boolean;
 
    -- Get the induced subgraph from G based on a vertex set
    procedure Get_Induced_Subgraph(
-      G          : Graph;
-      Vertices   : array (Vertex_Index) of Boolean;
-      Subgraph  : out Graph);
+      G : Graph;
+      Vertices : array (Vertex_Index) of Boolean;
+      Subgraph : out Graph);
 
    -- ===================================================================
    -- DEBUG AND VISUALIZATION
