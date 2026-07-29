@@ -2,7 +2,7 @@ with Ada.Text_IO;
 
 package body Subgraph_Isomorphism is
 
-   type State_Array is array (Vertex_Index) of Boolean;
+   type State_Array is array (1 .. Max_Vertices) of Boolean;
 
    procedure Initialize_Graph(G : out Graph) is
    begin
@@ -11,7 +11,7 @@ package body Subgraph_Isomorphism is
       G.Adj_Matrix := (others => (others => False));
    end Initialize_Graph;
 
-   procedure Add_Vertex(G : in out Graph; V : Vertex_Index) is
+   procedure Add_Vertex(G : in out Graph; V : Integer) is
    begin
       if G.Num_Vertices >= Max_Vertices then
          raise Graph_Too_Large;
@@ -19,7 +19,7 @@ package body Subgraph_Isomorphism is
       G.Num_Vertices := G.Num_Vertices + 1;
    end Add_Vertex;
 
-   procedure Add_Edge(G : in out Graph; From, To : Vertex_Index) is
+   procedure Add_Edge(G : in out Graph; From, To : Integer) is
    begin
       if From > G.Num_Vertices or To > G.Num_Vertices then
          raise Invalid_Vertex;
@@ -56,7 +56,7 @@ package body Subgraph_Isomorphism is
                if Valid then
                   for H_Mapped in 1 .. Depth - 1 loop
                      declare
-                        G_Prev : constant Vertex_Index := Current_Mapping(H_Mapped);
+                        G_Prev : constant Integer := Current_Mapping(H_Mapped);
                      begin
                         if H.Adj_Matrix(H_Mapped, H_Vertex) and then
                            not G.Adj_Matrix(G_Prev, G_Candidate) then
