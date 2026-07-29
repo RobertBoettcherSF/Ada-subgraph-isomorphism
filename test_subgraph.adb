@@ -80,7 +80,7 @@ begin
    Add_Edge(H, 1, 2);
 
    Find_All_Mappings(G, H, Mappings, VF2, 10, Found_Count);
-   Put_Line("Found " & Integer'Image(Found_Count) & " mappings");
+   Put_Line("Found " & Natural'Image(Found_Count) & " mappings");
 
    Put_Line("All tests completed!");
 end Test_Subgraph;
