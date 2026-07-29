@@ -79,7 +79,7 @@ begin
    Add_Vertex(H, 2);
    Add_Edge(H, 1, 2);
 
-   Find_All_Mappings(G, H, Mappings, 10, VF2, Found_Count);
+   Find_All_Mappings(G, H, Mappings, VF2, 10, Found_Count);
    Put_Line("Found " & Integer'Image(Found_Count) & " mappings");
 
    Put_Line("All tests completed!");
