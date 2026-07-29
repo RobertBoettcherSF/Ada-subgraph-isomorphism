@@ -3,15 +3,15 @@ package Subgraph_Isomorphism is
    Max_Vertices : constant := 100;
    Max_Mappings : constant := 1000;
 
-   type Vertex_Index is range 0 .. Max_Vertices;  -- Now includes 0
+   type Vertex_Index is range 1 .. Max_Vertices;
    type Adjacency_Matrix_Type is array (Vertex_Index, Vertex_Index) of Boolean;
    type Vertex_Mapping_Type is array (1 .. Max_Vertices) of Vertex_Index;
    type Mapping_List_Type is array (1 .. Max_Mappings) of Vertex_Mapping_Type;
 
    type Graph is record
-      Num_Vertices : Vertex_Index := 0;
+      Num_Vertices : Integer := 0;
       Adj_Matrix   : Adjacency_Matrix_Type;
-      Num_Edges    : Vertex_Index := 0;
+      Num_Edges    : Integer := 0;
    end record;
 
    type Algorithm_Type is (Ullmann, VF2);
