@@ -1,32 +1,12 @@
 --  subgraph_isomorphism.gpr
 --  GNAT Project File for Subgraph Isomorphism Problem
 --
---  This project file compiles the subgraph isomorphism package
---  and provides a simple test main program.
---
 --  Author: Robert Boettcher
 --  Date: July 29, 2026
 
 project Subgraph_Isomorphism is
-
-   -- Source directories
    for Source_Dirs use ("src");
-
-   -- Object directory
    for Object_Dir use "obj";
-
-   -- Executable directory
    for Exec_Dir use "bin";
-
-   -- Main program for testing
    for Main use ("test_subgraph.adb");
-
-   -- Compiler switches
-   for Compiler ("ada") use ("gnatmake");
-
-   -- Default compiler options
-   package Compiler is
-      for Default_Switches ("ada") use ("-gnatN", "-gnata", "-O2");
-   end Compiler;
-
 end Subgraph_Isomorphism;
