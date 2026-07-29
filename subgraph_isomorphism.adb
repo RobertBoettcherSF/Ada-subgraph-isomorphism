@@ -9,14 +9,10 @@ with Ada.Integer_Text_IO;
 
 package body Subgraph_Isomorphism is
 
-   -- ===================================================================
-   -- LOCAL TYPES AND CONSTANTS
-   -- ===================================================================
-
    type State_Array is array (Vertex_Index) of Boolean;
 
    -- ===================================================================
-   -- GRAPH CONSTRUCTION AND MANIPULATION
+   -- GRAPH CONSTRUCTION
    -- ===================================================================
 
    procedure Initialize_Graph(G : out Graph) is
@@ -63,7 +59,7 @@ package body Subgraph_Isomorphism is
    end Add_Edge;
 
    -- ===================================================================
-   -- GRAPH PROPERTIES AND VALIDATION
+   -- GRAPH PROPERTIES
    -- ===================================================================
 
    function Is_Valid_Graph(G : Graph) return Boolean is
@@ -229,7 +225,7 @@ package body Subgraph_Isomorphism is
       G : Graph;
       H : Graph;
       Mappings : out Mapping_List_Type;
-      Max_Mappings : Positive := Max_Mappings;
+      Max_Mappings : Positive;
       Use_Labels : Boolean := False;
       Found_Count : out Natural) is
 
@@ -253,7 +249,7 @@ package body Subgraph_Isomorphism is
             return;
          end if;
 
-         for G_Candidate in 1 .. G.Num_Vertices loop
+         for G_Candidate : Vertex_Index in 1 .. G.Num_Vertices loop
             if not Mapped_G(G_Candidate) then
                declare
                   H_Vertex : constant Vertex_Index := Depth;
@@ -266,7 +262,7 @@ package body Subgraph_Isomorphism is
                   end if;
 
                   if Valid_Candidate then
-                     for H_Mapped in 1 .. Depth - 1 loop
+                     for H_Mapped : Vertex_Index in 1 .. Depth - 1 loop
                         declare
                            H_Prev : constant Vertex_Index := H_Mapped;
                            G_Prev : constant Vertex_Index := Current_Mapping(H_Prev);
@@ -578,7 +574,7 @@ package body Subgraph_Isomorphism is
       G : Graph;
       H : Graph;
       Mappings : out Mapping_List_Type;
-      Max_Mappings : Positive := Max_Mappings;
+      Max_Mappings : Positive;
       Use_Labels : Boolean := False;
       Found_Count : out Natural) is
 
@@ -725,7 +721,7 @@ package body Subgraph_Isomorphism is
       H : Graph;
       Mappings : out Mapping_List_Type;
       Algorithm : Algorithm_Type := VF2;
-      Max_Mappings : Positive := Max_Mappings;
+      Max_Mappings : Positive;
       Use_Labels : Boolean := False;
       Found_Count : out Natural) is
    begin
@@ -751,7 +747,23 @@ package body Subgraph_Isomorphism is
    end Count_Isomorphisms;
 
    -- ===================================================================
-   -- DEBUG AND VISUALIZATION
+   -- UTILITY FUNCTIONS
+   -- ===================================================================
+
+   function Are_Isomorphic(
+      G, H : Graph;
+      Algorithm : Algorithm_Type := VF2;
+      Use_Labels : Boolean := False) return Boolean is
+   begin
+      if G.Num_Vertices /= H.Num_Vertices then
+         return False;
+      end if;
+
+      return Is_Subgraph(G, H, Algorithm, Use_Labels);
+   end Are_Isomorphic;
+
+   -- ===================================================================
+   -- DEBUG
    -- ===================================================================
 
    procedure Print_Graph(G : Graph) is
