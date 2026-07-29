@@ -34,7 +34,7 @@ package body Subgraph_Isomorphism is
 
    procedure Ullmann_Backtrack(
       G, H : Graph;
-      Depth : Vertex_Index;
+      Depth : Integer;
       Current_Mapping : in out Vertex_Mapping_Type;
       Mapped_G : in out State_Array;
       Mapped_H : in out State_Array;
@@ -50,7 +50,7 @@ package body Subgraph_Isomorphism is
       for G_Candidate in 1 .. G.Num_Vertices loop
          if not Mapped_G(G_Candidate) then
             declare
-               H_Vertex : constant Vertex_Index := Depth;
+               H_Vertex : constant Integer := Depth;
                Valid : Boolean := True;
             begin
                if Valid then
@@ -188,8 +188,8 @@ package body Subgraph_Isomorphism is
    procedure Print_Graph(G : Graph) is
       use Ada.Text_IO;
    begin
-      Put_Line("Graph: V=" & Vertex_Index'Image(G.Num_Vertices) &
-               ", E=" & Vertex_Index'Image(G.Num_Edges));
+      Put_Line("Graph: V=" & Integer'Image(G.Num_Vertices) &
+               ", E=" & Integer'Image(G.Num_Edges));
    end Print_Graph;
 
 end Subgraph_Isomorphism;
