@@ -51,7 +51,8 @@ procedure Test_Subgraph is
       Count := VF2_Count_Isomorphisms(G, H);
       Put("Number of isomorphisms: "); Put_Line(Integer'Image(Count));
 
-      Find_All_Mappings(G, H, Mappings, 10, VF2, Found_Count);
+      -- FIXED: Added missing Use_Labels parameter
+      Find_All_Mappings(G, H, Mappings, VF2, 10, False, Found_Count);
       Put("Found "); Put(Integer'Image(Found_Count)); Put_Line(" mappings");
    end Test_Triangle_In_Square;
 
