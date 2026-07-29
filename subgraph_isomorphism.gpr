@@ -21,26 +21,12 @@ project Subgraph_Isomorphism is
    -- Main program for testing
    for Main use ("test_subgraph.adb");
 
-   -- Compiler options
-   for Compiler ("ada") use "gnatmake";
+   -- Compiler switches
+   for Compiler ("ada") use ("gnatmake");
 
-   -- Switches for the Ada compiler
+   -- Default compiler options
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatN", "-gnata", "-gnatw.e", "-O2");
+      for Default_Switches ("ada") use ("-gnatN", "-gnata", "-O2");
    end Compiler;
-
-   -- Build options
-   type Build_Type is ("debug", "release");
-   Build_Mode : Build_Type := external ("BUILD_MODE", "release");
-
-   -- Package for build mode specific settings
-   package Build is
-      case Build_Mode is
-         when "debug" =>
-            for Default_Switches ("ada") use Compiler.Default_Switches ("ada") & "-g";
-         when "release" =>
-            for Default_Switches ("ada") use Compiler.Default_Switches ("ada") & "-O3";
-      end case;
-   end Build;
 
 end Subgraph_Isomorphism;
