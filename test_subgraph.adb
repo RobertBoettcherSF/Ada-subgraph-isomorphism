@@ -7,7 +7,6 @@ procedure Test_Subgraph is
 
    G, H : Graph;
    Result : Boolean;
-   Count : Natural;
    Mappings : Mapping_List_Type;
    Found_Count : Natural;
 
@@ -64,6 +63,24 @@ begin
    Initialize_Graph(H);
    Result := Is_Subgraph(G, H, VF2);
    Put_Line("Empty H in empty G: " & Boolean'Image(Result));
+
+   -- Test 4: Find All
+   New_Line;
+   Put_Line("Test 4: Find All Mappings");
+   Initialize_Graph(G);
+   Add_Vertex(G, 1);
+   Add_Vertex(G, 2);
+   Add_Vertex(G, 3);
+   Add_Edge(G, 1, 2);
+   Add_Edge(G, 2, 3);
+
+   Initialize_Graph(H);
+   Add_Vertex(H, 1);
+   Add_Vertex(H, 2);
+   Add_Edge(H, 1, 2);
+
+   Find_All_Mappings(G, H, Mappings, 10, VF2, Found_Count);
+   Put_Line("Found " & Integer'Image(Found_Count) & " mappings");
 
    Put_Line("All tests completed!");
 end Test_Subgraph;
