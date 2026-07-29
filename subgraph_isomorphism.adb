@@ -10,22 +10,17 @@ package body Subgraph_Isomorphism is
       G.Num_Vertices := 0;
       G.Num_Edges := 0;
       G.Adj_Matrix := (others => (others => False));
-      G.Vertices := (others => (Label => Empty_Vertex_Label));
    end Initialize_Graph;
 
-   procedure Add_Vertex(G : in out Graph; V : Vertex_Index; Label : Vertex_Label := Empty_Vertex_Label) is
+   procedure Add_Vertex(G : in out Graph; V : Vertex_Index) is
    begin
-      if V > G.Num_Vertices + 1 then
-         raise Invalid_Vertex;
-      end if;
       if G.Num_Vertices >= Max_Vertices then
          raise Graph_Too_Large;
       end if;
       G.Num_Vertices := G.Num_Vertices + 1;
-      G.Vertices(V) := (Label => Label);
    end Add_Vertex;
 
-   procedure Add_Edge(G : in out Graph; From, To : Vertex_Index; Label : Edge_Label := Empty_Edge_Label) is
+   procedure Add_Edge(G : in out Graph; From, To : Vertex_Index) is
    begin
       if From > G.Num_Vertices or To > G.Num_Vertices then
          raise Invalid_Vertex;
@@ -66,10 +61,9 @@ package body Subgraph_Isomorphism is
       Mapped_G : in out State_Array;
       Mapped_H : in out State_Array;
       Found : out Boolean;
-      Use_Labels : Boolean;
       Count : in out Natural) is
    begin
-      if Depth > H.Num_Vertices then
+      if Depth > Integer(H.Num_Vertices) then
          Found := True;
          Count := Count + 1;
          return;
@@ -81,22 +75,18 @@ package body Subgraph_Isomorphism is
                H_Vertex : constant Integer := Depth;
                Valid : Boolean := True;
             begin
-               if Use_Labels then
-                  if G.Vertices(G_Candidate).Label /= H.Vertices(H_Vertex).Label then
-                     Valid := False;
-                  end if;
-               end if;
-
                if Valid then
                   for H_Mapped in 1 .. Depth - 1 loop
                      declare
                         G_Prev : constant Vertex_Index := Current_Mapping(H_Mapped);
                      begin
-                        if H.Adj_Matrix(H_Mapped, H_Vertex) and then not G.Adj_Matrix(G_Prev, G_Candidate) then
+                        if H.Adj_Matrix(H_Mapped, H_Vertex) and then
+                           not G.Adj_Matrix(G_Prev, G_Candidate) then
                            Valid := False;
                            exit;
                         end if;
-                        if not H.Adj_Matrix(H_Mapped, H_Vertex) and then G.Adj_Matrix(G_Prev, G_Candidate) then
+                        if not H.Adj_Matrix(H_Mapped, H_Vertex) and then
+                           G.Adj_Matrix(G_Prev, G_Candidate) then
                            Valid := False;
                            exit;
                         end if;
@@ -109,7 +99,9 @@ package body Subgraph_Isomorphism is
                   Mapped_G(G_Candidate) := True;
                   Mapped_H(H_Vertex) := True;
 
-                  Ullmann_Backtrack(G, H, Depth + 1, Current_Mapping, Mapped_G, Mapped_H, Found, Use_Labels, Count);
+                  Ullmann_Backtrack(
+                     G, H, Depth + 1, Current_Mapping,
+                     Mapped_G, Mapped_H, Found, Count);
 
                   Mapped_G(G_Candidate) := False;
                   Mapped_H(H_Vertex) := False;
@@ -125,7 +117,7 @@ package body Subgraph_Isomorphism is
       Found := False;
    end Ullmann_Backtrack;
 
-   function Ullmann_Is_Subgraph(G, H : Graph; Use_Labels : Boolean := False) return Boolean is
+   function Ullmann_Is_Subgraph(G, H : Graph) return Boolean is
       Current_Mapping : Vertex_Mapping_Type;
       Mapped_G : State_Array := (others => False);
       Mapped_H : State_Array := (others => False);
@@ -136,7 +128,7 @@ package body Subgraph_Isomorphism is
       if G.Num_Vertices = 0 then return False; end if;
       if not Is_Size_Compatible(G, H) then return False; end if;
 
-      Ullmann_Backtrack(G, H, 1, Current_Mapping, Mapped_G, Mapped_H, Found, Use_Labels, Count);
+      Ullmann_Backtrack(G, H, 1, Current_Mapping, Mapped_G, Mapped_H, Found, Count);
       return Found;
    end Ullmann_Is_Subgraph;
 
@@ -144,7 +136,6 @@ package body Subgraph_Isomorphism is
       G, H : Graph;
       Mappings : out Mapping_List_Type;
       Max_Mappings : Positive;
-      Use_Labels : Boolean := False;
       Found_Count : out Natural) is
    begin
       if H.Num_Vertices = 0 then
@@ -163,9 +154,8 @@ package body Subgraph_Isomorphism is
          Mapped_H : State_Array := (others => False);
          Local_Count : Natural := 0;
       begin
-         -- Simplified: Just use Ullmann's for now
          Current_Mapping := (others => 1);
-         for Depth in 1 .. H.Num_Vertices loop
+         for Depth in 1 .. Integer(H.Num_Vertices) loop
             for G_Candidate in 1 .. G.Num_Vertices loop
                if not Mapped_G(G_Candidate) then
                   Current_Mapping(Depth) := G_Candidate;
@@ -174,31 +164,33 @@ package body Subgraph_Isomorphism is
                   if Local_Count >= Max_Mappings then exit; end if;
                end if;
             end loop;
+            if Local_Count >= Max_Mappings then exit; end if;
          end loop;
          Found_Count := Local_Count;
       end;
    end Ullmann_Find_All_Mappings;
 
-   function VF2_Is_Subgraph(G, H : Graph; Use_Labels : Boolean := False) return Boolean is
+   function VF2_Is_Subgraph(G, H : Graph) return Boolean is
    begin
-      return Ullmann_Is_Subgraph(G, H, Use_Labels);
+      return Ullmann_Is_Subgraph(G, H);
    end VF2_Is_Subgraph;
 
    procedure VF2_Find_All_Mappings(
       G, H : Graph;
       Mappings : out Mapping_List_Type;
       Max_Mappings : Positive;
-      Use_Labels : Boolean := False;
       Found_Count : out Natural) is
    begin
-      Ullmann_Find_All_Mappings(G, H, Mappings, Max_Mappings, Use_Labels, Found_Count);
+      Ullmann_Find_All_Mappings(G, H, Mappings, Max_Mappings, Found_Count);
    end VF2_Find_All_Mappings;
 
-   function Is_Subgraph(G, H : Graph; Algorithm : Algorithm_Type := VF2; Use_Labels : Boolean := False) return Boolean is
+   function Is_Subgraph(
+      G, H : Graph;
+      Algorithm : Algorithm_Type := VF2) return Boolean is
    begin
       case Algorithm is
-         when Ullmann => return Ullmann_Is_Subgraph(G, H, Use_Labels);
-         when VF2 => return VF2_Is_Subgraph(G, H, Use_Labels);
+         when Ullmann => return Ullmann_Is_Subgraph(G, H);
+         when VF2 => return VF2_Is_Subgraph(G, H);
       end case;
    end Is_Subgraph;
 
@@ -207,18 +199,17 @@ package body Subgraph_Isomorphism is
       Mappings : out Mapping_List_Type;
       Algorithm : Algorithm_Type := VF2;
       Max_Mappings : Positive;
-      Use_Labels : Boolean := False;
       Found_Count : out Natural) is
    begin
       case Algorithm is
-         when Ullmann => Ullmann_Find_All_Mappings(G, H, Mappings, Max_Mappings, Use_Labels, Found_Count);
-         when VF2 => VF2_Find_All_Mappings(G, H, Mappings, Max_Mappings, Use_Labels, Found_Count);
+         when Ullmann => Ullmann_Find_All_Mappings(G, H, Mappings, Max_Mappings, Found_Count);
+         when VF2 => VF2_Find_All_Mappings(G, H, Mappings, Max_Mappings, Found_Count);
       end case;
    end Find_All_Mappings;
 
-   function Are_Isomorphic(G, H : Graph; Algorithm : Algorithm_Type := VF2; Use_Labels : Boolean := False) return Boolean is
+   function Are_Isomorphic(G, H : Graph; Algorithm : Algorithm_Type := VF2) return Boolean is
    begin
-      return G.Num_Vertices = H.Num_Vertices and then Is_Subgraph(G, H, Algorithm, Use_Labels);
+      return G.Num_Vertices = H.Num_Vertices and then Is_Subgraph(G, H, Algorithm);
    end Are_Isomorphic;
 
    procedure Print_Graph(G : Graph) is
