@@ -61,18 +61,18 @@ procedure Test_Subgraph is
       Put_Line("=== Test 2: Path Graph ===");
 
       Initialize_Graph(G);
-      for I in 1 .. 5 loop
+      for I : Vertex_Index in 1 .. 5 loop
          Add_Vertex(G, I);
       end loop;
-      for I in 1 .. 4 loop
+      for I : Vertex_Index in 1 .. 4 loop
          Add_Edge(G, I, I + 1);
       end loop;
 
       Initialize_Graph(H);
-      for I in 1 .. 3 loop
+      for I : Vertex_Index in 1 .. 3 loop
          Add_Vertex(H, I);
       end loop;
-      for I in 1 .. 2 loop
+      for I : Vertex_Index in 1 .. 2 loop
          Add_Edge(H, I, I + 1);
       end loop;
 
@@ -147,7 +147,7 @@ procedure Test_Subgraph is
       Put_Line("=== Test 5: Graph Isomorphism ===");
 
       Initialize_Graph(G);
-      for I in 1 .. 3 loop
+      for I : Vertex_Index in 1 .. 3 loop
          Add_Vertex(G, I);
       end loop;
       Add_Edge(G, 1, 2);
@@ -155,7 +155,7 @@ procedure Test_Subgraph is
       Add_Edge(G, 3, 1);
 
       Initialize_Graph(H);
-      for I in 1 .. 3 loop
+      for I : Vertex_Index in 1 .. 3 loop
          Add_Vertex(H, I);
       end loop;
       Add_Edge(H, 1, 2);
@@ -166,7 +166,7 @@ procedure Test_Subgraph is
       Put("Two triangles are isomorphic: "); Put_Line(Boolean'Image(Result));
 
       Initialize_Graph(H);
-      for I in 1 .. 3 loop
+      for I : Vertex_Index in 1 .. 3 loop
          Add_Vertex(H, I);
       end loop;
       Add_Edge(H, 1, 2);
